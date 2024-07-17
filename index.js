@@ -47,19 +47,42 @@ readUsersData().then(data => {
 
 
 
-app.get('/users', (req, res) => {
+app.get('/users',async (req, res) => {
     try {
         // res.send(users)
+        const users = await readUsersData();
         res.json(users)
     } catch (e) {
         res.status(400).json(e.message)
     }
 });
 
-app.post('/users', (req, res) => {
+app.get('/users/:id',async (req,res)=>{
+    try {
+    const users = await readUsersData();
+    const userId = Number(req.params.id);
+
+    //validation
+    const user = users.find(user => user.id === userId);
+    if (!user){
+        return res.status(404).json('user not found')
+    }
+    res.json(user);
+
+   }catch (e){
+        res.status(400).json(e.message);
+    }
+})
+
+
+
+
+app.post('/users',async (req, res) => {
     try {
 
         const {name, email, password} = req.body;
+
+        //validation
         if (!name.trim() || !email.trim() || !password.trim()){
             throw new Error('fill in : name, email , password')
         }
@@ -78,6 +101,7 @@ app.post('/users', (req, res) => {
         if (password.length < 6){
             throw new Error('password must be longer than 6 characters');
         }
+        const users = await readUsersData();
 
         const index = users.findIndex((user) => user.email === email);
         if (index !== -1){
@@ -89,29 +113,37 @@ app.post('/users', (req, res) => {
             name,
             email,
             password
-        }
-
+        };
 
         users.push(newUser);
-        res.status(201).json(newUser)
+        await writeUsersData(users);
+        res.status(201).json(newUser);
     } catch (e) {
-        res.status(400).json(e.message)
+        res.status(400).json(e.message);
 
     }
 
 })
 
-app.put('/users/:userId', (req, res) => {
+app.put('/users/:userId',async (req, res) => {
     try {
         const userId = Number(req.params.userId);
         const {name, email, password} = req.body;
+        // users json
+        const users = await readUsersData();
+
+        //validation
         const user = users.find(user => user.id === userId);
         if (!user){
             return res.status(404).json('user not found')
         }
+
+        //user params
         if (name) {user.name = name;}
         if (email) {user.email = email;}
         if (password) {user.password = password;}
+
+
 
         if (!name.trim() || !email.trim()) {
             throw new Error('fill in : name, email , password')
@@ -136,6 +168,9 @@ app.put('/users/:userId', (req, res) => {
             throw new Error('password cant be longer than 20 characters');
         }
 
+        // update user
+        await writeUsersData(users);
+
        res.status(201).json(user);
 
     }catch (e){
@@ -144,15 +179,25 @@ app.put('/users/:userId', (req, res) => {
 });
 
 
-app.delete('/users/:userId', (req, res) => {
+app.delete('/users/:userId',async (req, res) => {
         try {
+
             const userId = Number(req.params.userId);
+
+            const users = await readUsersData();
+
             const index = users.findIndex((user) => user.id === userId);
             if (index === -1){
                 return res.status(404).json('user not found')
             }
+
+            //remove user by id
             users.splice(index,1);
-            res.status(204).json('user deleted');
+
+            //save update
+            await writeUsersData(users);
+
+            res.status(202).json('user deleted');
 
 
         }catch (e){
