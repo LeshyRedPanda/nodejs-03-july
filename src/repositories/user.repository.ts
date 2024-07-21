@@ -3,6 +3,11 @@ import {User} from "../models/user.model";
 
 
 class UserRepository {
+
+    public async getByParams(params:Partial<IUser>):Promise<IUser>{
+        return await User.findOne(params)
+    }
+
     public async getList():Promise<IUser[]>{
         return await User.find();
     }

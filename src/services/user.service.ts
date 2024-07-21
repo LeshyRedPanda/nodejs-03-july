@@ -1,5 +1,6 @@
 import {IUser} from "../interfaces/user.interface";
 import {userRepository} from "../repositories/user.repository";
+import {ApiError} from "../errors/api-error";
 
 
 class UserService {
@@ -31,6 +32,8 @@ class UserService {
         if (password.length < 6){
             throw new Error('password must be longer than 6 characters');
         }
+
+        await this.isEmailExist(email);
         return await userRepository.create(dto);
 
     }
@@ -46,7 +49,12 @@ class UserService {
     public async deleteById(userId:string):Promise<void>{
         await userRepository.deleteById(userId);
     }
-
+    private async isEmailExist(email:string):Promise<void> {
+        const user = await userRepository.getByParams({email});
+        if (user){
+            throw new ApiError('email already exist',409)
+        }
+    }
 
 
 
