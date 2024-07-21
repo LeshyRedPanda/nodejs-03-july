@@ -2,6 +2,7 @@ module.exports = {
     env: {
         browser: true,
         es2023: true,
+        node:true,
     },
     extends: [
         "plugin:prettier/recommended",
