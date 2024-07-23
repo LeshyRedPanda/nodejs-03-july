@@ -29,9 +29,6 @@ class UserService {
             throw new Error('name cant be longer than 20 characters');
         }
 
-        if (password.length < 6){
-            throw new Error('password must be longer than 6 characters');
-        }
 
         await this.isEmailExist(email);
         return await userRepository.create(dto);
